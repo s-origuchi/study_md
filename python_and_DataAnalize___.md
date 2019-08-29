@@ -50,8 +50,8 @@ logging.critical("重大なエラー")
 日付処理用
 
 ````
-from datetime import datetime, date
 datetime.now() #現在日時取得
+from datetime import datetime, date
 date.today() #今日の日付取得
 date.today() - date(2008, 12,3) #python3 リリースからの日数計算
 datetime.now().isoformat() #ISO8601形式の文字列を取得
@@ -646,4 +646,272 @@ In [90]: b<0
 Out[90]:
 array([[ True,  True,  True],
        [False, False, False]])
+````
+
+## 4.2 pandas
+### 4.2.1 pandasの概要
+- pandas とは
+NumPyを基盤に **シリーズ（Series）** と **データフレーム（DataFrame）** というデータ型を提供。
+
+````
+In [1]: import pandas as pd
+````
+
+- Seriesとは
+一次元データ。下記例ではすべて数字を入れたため、
+データタイプはnp.int64
+
+````
+In [2]: ser = pd.Series([10,20,30,40])
+
+In [3]: ser
+Out[3]:
+0    10
+1    20
+2    30
+3    40
+dtype: int64
+````
+
+
+- DataFrameとは
+二次元のデータ。
+
+````
+In [4]: df = pd.DataFrame([[10,"a",True],
+   ...:                   [20,"b",False],
+   ...:                   [30,"c",False],
+   ...:                   [40, "d", True]])
+
+In [5]: df
+Out[5]:
+    0  1      2
+0  10  a   True
+1  20  b  False
+2  30  c  False
+3  40  d   True
+
+````
+
+- DataFrameの概要を見る
+
+````
+In [2]: import numpy as np
+
+In [3]: df = pd.DataFrame(np.arange(100).reshape((25,4)))
+
+In [4]: df.head()
+Out[4]:
+    0   1   2   3
+0   0   1   2   3
+1   4   5   6   7
+2   8   9  10  11
+3  12  13  14  15
+4  16  17  18  19
+
+In [6]: df.shape
+Out[6]: (25, 4)
+````
+
+- インデックス名、カラム名
+名前をつけよう
+
+````
+In [9]: df.index = ["01", "02", "03"] #後から加える場合
+In [12]: df.columns = ["a", "b"]
+In [13]: df
+Out[13]:
+    a  b
+01  0  1
+02  2  3
+03  4  5
+
+#データフレーム作成時にコラム・インデックスを指定する方法
+In [5]: name_df = pd.DataFrame(np.arange(6).reshape((3,2)),
+                               columns=["aa","BB"],
+                               index=["1列目", "2列め", "3列目"])
+In [6]: name_df
+Out[6]:
+     aa  BB
+1列目   0   1
+2列め   2   3
+3列目   4   5
+
+#辞書データを利用して開く方法
+In [8]: pd.DataFrame({"A":[0,2,4] ,"B":[1,3,5]})
+Out[8]:
+   A  B
+0  0  1
+1  2  3
+2  4  5
+
+````
+
+- Dataの抽出
+pandas データFrameからデータを取り出す
+
+````
+In [13]: df = pd.DataFrame(np.arange(12).reshape((4,3)),columns=["aa","BB", "c"],index=["1列目", "2列め", "3列目", "4列目"])
+
+In [14]: df
+Out[14]:
+     aa  BB   c
+1列目   0   1   2
+2列め   3   4   5
+3列目   6   7   8
+4列目   9  10  11
+
+In [15]: df["aa"]　#取り出されるデータはSeriarl
+Out[15]:
+1列目    0
+2列め    3
+3列目    6
+4列目    9
+Name: aa, dtype: int64
+In [19]: df
+Out[19]:
+     aa  BB   c
+1列目   0   1   2
+2列め   3   4   5
+3列目   6   7   8
+4列目   9  10  11
+
+In [20]: df[["aa", "BB"]] #カラムをリスト型で指定
+Out[20]:
+     aa  BB
+1列目   0   1
+2列め   3   4
+3列目   6   7
+4列目   9  10
+
+In [21]: df[["aa", "c"]]
+Out[21]:
+     aa   c
+1列目   0   2
+2列め   3   5
+3列目   6   8
+4列目   9  11
+
+In [22]: df[:2] #インデックスを指定
+Out[22]:
+     aa  BB  c
+1列目   0   1  2
+2列め   3   4  5
+
+````
+
+抽出方法を直接ではなく、loc() または iloc（）を使用して抽出する
+
+````
+In [27]: df.loc[:,"aa"]
+Out[27]:
+1列目    0
+2列め    3
+3列目    6
+4列目    9
+Name: aa, dtype: int64
+
+In [28]: df.iloc[1:,:2]
+Out[28]:
+     aa  BB
+2列め   3   4
+3列目   6   7
+4列目   9  10
+````
+
+### 4.2.2 データの読み込み、書き込み
+
+- データ読み込み:csvファイル
+csvからデータを読むことができます。
+
+````
+In [34]: df = pd.read_csv("env-home/notebooks/data/201704health.csv", encoding="utf-8")
+
+In [35]: df.head()
+Out[35]:
+           日付     歩数  摂取カロリー
+0  2017-04-01   5439    2500
+1  2017-04-02   2510    2300
+2  2017-04-03  10238    1950
+3  2017-04-04   8209    1850
+4  2017-04-05   9434    1930
+````
+
+- データ読み込み：excelファイル
+
+`````
+In [34]: df = pd.read_csv("env-home/notebooks/data/201704health.csv", encoding="utf-8")
+
+In [35]: df.head()
+Out[35]:
+           日付     歩数  摂取カロリー
+0  2017-04-01   5439    2500
+1  2017-04-02   2510    2300
+2  2017-04-03  10238    1950
+3  2017-04-04   8209    1850
+4  2017-04-05   9434    1930
+`````
+
+- データ書き込み
+csv、excel書き込みを両方試します。
+
+````
+In [53]: df.to_csv("~/test.csv")
+In [54]: df.to_excel("~/test.xlsx")
+````
+
+データをそのまま保管するにはpickle形式があります
+
+````
+In [59]: df.to_pickle("~/test.pickle")
+
+In [60]: df1 = pd.read_pickle("~/test.pickle")
+
+In [61]: df1
+Out[61]:
+            日付     歩数  摂取カロリー
+0   2017-04-01   5439    2500
+1   2017-04-02   2510    2300
+2   2017-04-03  10238    1950
+3   2017-04-04   8209    1850
+4   2017-04-05   9434    1930
+5   2017-04-06   7593    1800
+````
+
+### 4.2.3 データの整形
+
+````
+In [66]: df["歩数"] >= 10000
+Out[66]:
+0     False
+1     False
+2      True
+3     False
+---中略---
+21    False
+22    False
+23    False
+24    False
+25    False
+26    False
+27    False
+28    False
+29    False
+Name: 歩数, dtype: bool
+````
+戻り値はbool型のシリーズ
+
+上の結果を利用して10000歩を超えている行を調べる
+
+````
+In [80]: df_selected = df[df["歩数"] >= 10000]
+
+In [81]: df_selected
+Out[81]:
+            日付     歩数  摂取カロリー
+2   2017-04-03  10238    1950
+8   2017-04-09  12045    1950
+12  2017-04-13  10287    1800
+19  2017-04-20  15328    1800
+20  2017-04-21  12849    1940
 ````
